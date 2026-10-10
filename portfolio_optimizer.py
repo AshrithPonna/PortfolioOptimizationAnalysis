@@ -8,7 +8,7 @@ and covariance, optimizes a long-only portfolio for maximum Sharpe ratio, and
 plots the resulting efficient frontier.
 """
 
-from __future__ import annotations
+from __future__ import annotations # adding information
 
 import argparse
 from dataclasses import dataclass
@@ -49,8 +49,7 @@ def download_prices(tickers: Sequence[str]) -> pd.DataFrame:
     if downloaded.empty:
         raise ValueError("No market data was returned. Check the ticker symbols and internet connection.")
 
-    # yfinance returns a MultiIndex for multiple tickers and a regular index
-    # for one ticker. In both cases, normalize the result to ticker columns.
+
     if isinstance(downloaded.columns, pd.MultiIndex):
         if "Close" in downloaded.columns.get_level_values(0):
             prices = downloaded["Close"]
@@ -68,8 +67,6 @@ def download_prices(tickers: Sequence[str]) -> pd.DataFrame:
     if missing:
         raise ValueError("No usable price history was found for: " + ", ".join(missing))
 
-    # Forward-fill isolated missing observations, then remove dates that still
-    # cannot be used. Requiring a reasonable history avoids unstable estimates.
     prices = prices.ffill().dropna()
     if len(prices) < 60:
         raise ValueError("Fewer than 60 trading days of complete data were available.")
@@ -182,8 +179,6 @@ def efficient_frontier(
                 target_return=float(target_return),
             )
         except RuntimeError:
-            # A target near a numerical endpoint can be infeasible by a tiny
-            # tolerance even though the surrounding frontier is valid.
             continue
         frontier_risks.append(result.volatility)
         frontier_returns.append(result.expected_return)
